@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from "@angular/core";
 
 @Component({
-  selector: 'app-dashboard-page',
+  selector: "app-dashboard-page",
   imports: [],
   template: `
     <div class="p-8">
