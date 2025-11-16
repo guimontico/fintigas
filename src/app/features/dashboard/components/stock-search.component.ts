@@ -1,7 +1,8 @@
 import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
-import type { SearchInput } from "../../../models";
+import type { SearchInput, StockSymbol } from "../../../models";
 import { StockSearchStore } from "../../../store/stock-search.store";
+import { WalletStore } from "../../../store/wallet.store";
 import { StockSearchInputComponent } from "./stock-search-input.component";
 
 @Component({
@@ -35,12 +36,35 @@ import { StockSearchInputComponent } from "./stock-search-input.component";
           </h3>
           <ul class="space-y-3">
             @for (stock of store.results(); track stock['1. symbol']) {
-              <li class="p-4 border border-gray-200 rounded bg-gray-50 cursor-pointer transition-all hover:bg-gray-100 hover:border-blue-500 hover:shadow-md">
-                <div class="font-semibold text-gray-900 text-lg mb-1">{{ stock['1. symbol'] }}</div>
-                <div class="text-gray-700 text-sm mb-2">{{ stock['2. name'] }}</div>
-                <div class="flex gap-4 text-sm text-gray-600">
-                  <span>{{ stock['3. type'] }}</span>
-                  <span>{{ stock['4. region'] }}</span>
+              <li class="p-4 border border-gray-200 rounded bg-gray-50">
+                <div class="flex justify-between items-start">
+                  <div class="flex-1">
+                    <div class="font-semibold text-gray-900 text-lg mb-1">{{ stock['1. symbol'] }}</div>
+                    <div class="text-gray-700 text-sm mb-2">{{ stock['2. name'] }}</div>
+                    <div class="flex gap-4 text-sm text-gray-600">
+                      <span>{{ stock['3. type'] }}</span>
+                      <span>{{ stock['4. region'] }}</span>
+                    </div>
+                  </div>
+                  <div class="ml-4">
+                    @if (walletStore.isSaved(stock['1. symbol'])) {
+                      <button
+                        (click)="removeTicker(stock['1. symbol'])"
+                        class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm font-medium"
+                        type="button"
+                      >
+                        Remove
+                      </button>
+                    } @else {
+                      <button
+                        (click)="saveTicker(stock)"
+                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm font-medium"
+                        type="button"
+                      >
+                        Save
+                      </button>
+                    }
+                  </div>
                 </div>
               </li>
             }
@@ -57,6 +81,7 @@ import { StockSearchInputComponent } from "./stock-search-input.component";
 })
 export class StockSearchComponent {
   store = inject(StockSearchStore);
+  walletStore = inject(WalletStore);
 
   onSearch(input: SearchInput): void {
     if (!input.query.trim()) {
@@ -64,5 +89,16 @@ export class StockSearchComponent {
       return;
     }
     this.store.search(input.query);
+  }
+
+  saveTicker(stock: StockSymbol): void {
+    const success = this.walletStore.addTicker(stock);
+    if (!success) {
+      console.warn('Failed to save ticker or ticker already exists');
+    }
+  }
+
+  removeTicker(symbol: string): void {
+    this.walletStore.removeTicker(symbol);
   }
 }

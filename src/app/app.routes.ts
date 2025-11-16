@@ -6,6 +6,12 @@ export const routes: Routes = [
   {
     path: "",
     component: DashboardLayout,
-    children: dashboardRoutes,
+    children: [
+      ...dashboardRoutes,
+      {
+        path: "wallet",
+        loadChildren: () => import("./features/wallet/wallet.routes").then(m => m.WALLET_ROUTES),
+      },
+    ],
   },
 ];
