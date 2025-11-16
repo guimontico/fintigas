@@ -2,10 +2,7 @@ import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, output } from "@angular/core";
 import { FormControl, ReactiveFormsModule } from "@angular/forms";
 import { debounceTime, distinctUntilChanged } from "rxjs/operators";
-
-export interface SearchInput {
-  query: string;
-}
+import type { SearchInput } from "../../../models";
 
 @Component({
   selector: "app-stock-search-input",

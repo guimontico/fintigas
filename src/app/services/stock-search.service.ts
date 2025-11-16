@@ -1,38 +1,49 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable, inject } from "@angular/core";
 import type { Observable } from "rxjs";
-
-export interface StockSymbol {
-  "1. symbol": string;
-  "2. name": string;
-  "3. type": string;
-  "4. region": string;
-  "5. marketopen": string;
-  "6. marketclose": string;
-  "7. timezone": string;
-  "8. currency": string;
-  "9. matchscore": string;
-}
-
-export interface SymbolSearchResponse {
-  bestMatches: StockSymbol[];
-}
+import { environment } from "../../environments/environment";
+import type { SymbolSearchResponse } from "../models";
 
 @Injectable({
   providedIn: "root",
 })
 export class StockSearchService {
   private readonly http = inject(HttpClient);
-  private readonly apiKey = "demo"; // Replace with your API key
-  private readonly apiBaseUrl = "https://www.alphavantage.co/query";
+  private readonly apiKey = environment.apiKey;
+  private readonly apiBaseUrl = environment.apiBaseUrl;
+  private readonly demoMode = environment.demoMode;
+  private readonly demoParams = environment.demoParams;
 
   searchSymbols(keywords: string): Observable<SymbolSearchResponse> {
-    const params = {
+    const params = this.buildParams("SYMBOL_SEARCH", {
       function: "SYMBOL_SEARCH",
       keywords,
       apikey: this.apiKey,
-    };
+    });
 
     return this.http.get<SymbolSearchResponse>(this.apiBaseUrl, { params });
+  }
+
+  /**
+   * Builds API parameters with demo overrides if in demo mode
+   * @param endpoint - The API function name (e.g., "SYMBOL_SEARCH", "NEWS_SENTIMENT")
+   * @param params - The original parameters to send
+   * @returns Modified parameters with demo overrides applied if demoMode is enabled
+   */
+  private buildParams(
+    endpoint: string,
+    params: Record<string, string>
+  ): Record<string, string> {
+    if (!this.demoMode) {
+      return params;
+    }
+
+    const demoOverrides =
+      this.demoParams[endpoint as keyof typeof this.demoParams];
+    if (demoOverrides) {
+      return { ...params, ...demoOverrides };
+    }
+
+    return params;
   }
 }
